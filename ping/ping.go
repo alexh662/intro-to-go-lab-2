@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"runtime/trace"
@@ -9,17 +10,29 @@ import (
 
 func foo(channel chan string) {
 	// TODO: Write an infinite loop of sending "pings" and receiving "pongs"
-
+	channel <- "sending ping"
+	fmt.Println("sending ping")
+	for <-channel == "sending pong" {
+		fmt.Println("receiving pong")
+		channel <- "sending ping"
+		fmt.Println("sending ping")
+	}
 }
 
 func bar(channel chan string) {
 	// TODO: Write an infinite loop of receiving "pings" and sending "pongs"
+	for <-channel == "sending ping" {
+		fmt.Println("received ping")
+		channel <- "sending pong"
+		fmt.Println("sending pong")
+	}
 }
 
 func pingPong() {
 	// TODO: make channel of type string and pass it to foo and bar
-	go foo(nil) // Nil is similar to null. Sending or receiving from a nil chan blocks forever.
-	go bar(nil)
+	channel := make(chan string)
+	go foo(channel) // Nil is similar to null. Sending or receiving from a nil chan blocks forever.
+	go bar(channel)
 	time.Sleep(500 * time.Millisecond)
 }
 
